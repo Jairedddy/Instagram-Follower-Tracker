@@ -36,7 +36,7 @@ The **Instagram Follow-Back Checker** is a sophisticated Python-based automation
 
 ### What It Does
 
-1. **Automated Login**: Secure login with real-time character-by-character input
+1. **Automated Login**: Secure login using credentials stored in `.env` file
 2. **Profile Analysis**: Automatically analyzes your logged-in account
 3. **Complete Extraction**: Scrolls through all followers and following lists
 4. **Smart Comparison**: Identifies accounts that don't follow you back
@@ -53,12 +53,13 @@ The **Instagram Follow-Back Checker** is a sophisticated Python-based automation
 
 ## ✨ Key Features
 
-### 🔐 Secure Login with Real-Time Input
+### 🔐 Secure Login with Environment Variables
 
-- **Character-by-Character Input**: See your username and password (as asterisks) as you type
-- **Browser Synchronization**: Characters appear in browser fields as you type in terminal
-- **2FA Support**: Handles two-factor authentication seamlessly
-- **Auto-Dialog Handling**: Automatically closes Instagram's "Save Info" and "Ok" dialogs
+- **Environment-Based Credentials**: Store login credentials securely in `.env` file
+- **No Manual Input Required**: Credentials are automatically loaded from environment variables
+- **2FA Support**: Handles two-factor authentication seamlessly (OTP code still entered manually)
+- **Dialog Handling**: Attempts to automatically close Instagram's "Save Info" and "Ok" dialogs
+- **Manual Fallback**: If automatic dialog closing fails, you may need to manually click "Not Now" when asked to save login info
 
 ### 📊 Smart Extraction Algorithm
 
@@ -141,6 +142,7 @@ The **Instagram Follow-Back Checker** is a sophisticated Python-based automation
 |-----------|-----------|---------|
 | **Language** | Python | 3.9+ |
 | **Automation Framework** | Selenium WebDriver | 4.0+ |
+| **Environment Management** | python-dotenv | 1.0+ |
 | **Driver Management** | Selenium Manager | Built-in |
 | **Browser Support** | Chrome, Brave, Edge, Firefox | Latest |
 
@@ -218,14 +220,41 @@ cd Instagram-Bot
 # Navigate to the project directory
 cd Instagram-Bot
 
-# Install required packages
-pip install selenium>=4.0.0
-
-# Or create requirements.txt and install
+# Install required packages from requirements.txt
 pip install -r requirements.txt
+
+# Or install individually
+pip install selenium>=4.0.0 python-dotenv>=1.0.0
 ```
 
-### Step 3: Verify Installation
+### Step 3: Configure Credentials
+
+Create a `.env` file in the project root directory with your Instagram credentials:
+
+```bash
+# Create .env file (or edit the existing one)
+# On Windows (PowerShell):
+notepad .env
+
+# On Linux/Mac:
+nano .env
+```
+
+Add the following content to the `.env` file:
+
+```env
+# Instagram Login Credentials
+# Replace these with your actual Instagram credentials
+INSTAGRAM_USERNAME=your_username_or_email_or_phone
+INSTAGRAM_PASSWORD=your_password
+```
+
+**Important Security Notes**:
+- Never commit the `.env` file to version control (it should be in `.gitignore`)
+- Keep your credentials secure and private
+- The `.env` file is already included in `.gitignore` to prevent accidental commits
+
+### Step 4: Verify Installation
 
 ```bash
 # Test Python import
@@ -249,9 +278,9 @@ python app.py
    ```
 
 2. **Login Process**:
-   - Enter your Instagram username (characters appear in browser as you type)
-   - Enter your password (shown as asterisks `*` in terminal)
-   - If 2FA is enabled, enter the OTP code when prompted
+   - The application automatically loads your credentials from the `.env` file
+   - If 2FA is enabled, you'll be prompted to enter the OTP code in the terminal
+   - **Important**: If Instagram asks you to "Save Login Info", you may need to manually click "Not Now" in the browser window if the automatic clicking doesn't work
 
 3. **Wait for Analysis**:
    - The tool automatically analyzes your logged-in account
@@ -269,8 +298,6 @@ Instagram follow-back checker (Selenium)
 ---------------------
 Starting browser... (Selenium Manager will try to provide driver automatically)
 Using browser: chrome
-Your instagram username: your_username
-Your instagram password: ********
 
 Login successful!
 
@@ -325,10 +352,12 @@ Analyzing your account: your_username
    - Provides helpful error messages if all browsers fail
 
 2. **Login Process** (`login.py`)
+   - Loads credentials from `.env` file using environment variables
    - Navigates to Instagram login page
-   - Real-time character-by-character input synchronization
-   - Handles 2FA if required
-   - Closes dialog boxes automatically
+   - Automatically enters username and password
+   - Handles 2FA if required (OTP code entered manually)
+   - Attempts to automatically close dialog boxes ("OK" and "Not Now" buttons)
+   - **Note**: If automatic dialog closing fails, you may need to manually click "Not Now" when prompted to save login info
 
 3. **Profile Analysis** (`scraper.py`)
    - Navigates to logged-in user's profile
@@ -456,16 +485,26 @@ WebDriverException: ... driver not found
 
 #### 2. ❌ Login Fails
 
-**Error Message**:
+**Error Messages**:
 ```
+INSTAGRAM_USERNAME not found in environment variables
+INSTAGRAM_PASSWORD not found in environment variables
 Login page did not load properly
 ```
 
 **Solutions**:
-1. Check your internet connection
-2. Verify your username and password are correct
-3. Ensure Instagram is accessible (not blocked)
-4. Try again after a few minutes (rate limiting)
+1. **Missing Credentials**: Ensure you have created a `.env` file in the project root directory
+2. **Check .env File**: Verify that your `.env` file contains:
+   ```env
+   INSTAGRAM_USERNAME=your_actual_username
+   INSTAGRAM_PASSWORD=your_actual_password
+   ```
+3. **No Quotes Needed**: Don't wrap values in quotes in the `.env` file
+4. **Check Internet Connection**: Ensure you have a stable internet connection
+5. **Verify Credentials**: Double-check that your username and password are correct
+6. **Instagram Access**: Ensure Instagram is accessible (not blocked by firewall/VPN)
+7. **Rate Limiting**: Try again after a few minutes if you've made multiple login attempts
+8. **Manual "Not Now" Click**: If login seems stuck, check the browser window and manually click "Not Now" if Instagram asks to save login info
 
 #### 3. ⚠️ Extraction Stops Early
 
@@ -514,6 +553,21 @@ pip install selenium
 python3 -m pip install selenium
 ```
 
+#### 6b. ModuleNotFoundError: No module named 'dotenv'
+
+**Error Message**:
+```
+ModuleNotFoundError: No module named 'dotenv'
+Warning: python-dotenv not installed
+```
+
+**Solution**:
+```bash
+pip install python-dotenv
+# Or install all requirements
+pip install -r requirements.txt
+```
+
 #### 7. ❌ Threshold Exceeded
 
 **Error Message**:
@@ -547,6 +601,8 @@ Instagram-Bot/
 ├── login.py            # Instagram login functionality
 ├── scraper.py          # Profile and list extraction
 ├── utils.py            # Utility functions (parsing, progress bar, input)
+├── requirements.txt    # Python dependencies (selenium, python-dotenv)
+├── .env                # Instagram credentials (create this file, not in git)
 └── README.md           # This documentation
 ```
 
@@ -556,9 +612,11 @@ Instagram-Bot/
 |------|-------------|---------------|
 | `app.py` | Main orchestration, user interaction, analysis loop | `main()`, `run_analysis()` |
 | `browser.py` | Browser driver creation (Chrome, Edge, Firefox, Brave) | `create_driver_prefer_browser()` |
-| `login.py` | Instagram authentication, 2FA handling, dialog management | `login_instagram()`, `safe_click()` |
+| `login.py` | Instagram authentication using .env credentials, 2FA handling, dialog management | `login_instagram()`, `safe_click()` |
 | `scraper.py` | Profile count extraction, modal scrolling, account list extraction | `get_profile_counts()`, `extract_list_from_modal()`, `find_scrollable_container()` |
-| `utils.py` | Helper functions for parsing counts, progress display, real-time input | `parse_count()`, `update_progress_bar()`, `input_to_browser_real_time()` |
+| `utils.py` | Helper functions for parsing counts, progress display | `parse_count()`, `update_progress_bar()` |
+| `.env` | Environment variables file storing Instagram credentials | `INSTAGRAM_USERNAME`, `INSTAGRAM_PASSWORD` |
+| `requirements.txt` | Python package dependencies | `selenium`, `python-dotenv` |
 
 ### Code Organization
 
