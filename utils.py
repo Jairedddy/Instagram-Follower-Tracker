@@ -35,9 +35,15 @@ def update_progress_bar(current, total, scroll_count=0, bar_length=20):
     bar = '#' * filled + '-' * (bar_length - filled)
     percent_str = f"{int(percent * 100)}%"
     if total:
-        print(f"\r({bar}) {percent_str} accounts loaded ({current} out of {total}). Scroll: {scroll_count}", end='', flush=True)
+        message = f"({bar}) {percent_str} accounts loaded ({current} out of {total}). Scroll: {scroll_count}"
     else:
-        print(f"\r({bar}) {percent_str} accounts loaded ({current}). Scroll: {scroll_count}", end='', flush=True)
+        message = f"({bar}) {percent_str} accounts loaded ({current}). Scroll: {scroll_count}"
+    
+    # Clear the line and print the new message
+    # Pad with spaces to ensure we clear any leftover characters from previous updates
+    # Use a generous padding (120 chars) to cover most terminal widths
+    padding = ' ' * max(0, 120 - len(message))
+    print(f"\r{message}{padding}", end='', flush=True)
 
 
 def input_to_browser_real_time(driver, element, prompt, is_password=False):
